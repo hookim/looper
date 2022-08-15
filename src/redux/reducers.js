@@ -1,40 +1,56 @@
 //loop span for each clips
 const demoLoop = {
-    //point when down-arrow is clicked.
+    //the point when down-arrow is pressed.
     point : null,
-    memo : null
+    memo : ""
 }
 
 //each video clips
 const demoClips = {
-    title : null,
+    title : "untitled",
     link : null,
     id : null,
+    curIdx : 0, 
     loops : [{...demoLoop, point: 0}]
 }
-
-
-
 const reducer = (state = [], action) => {
-    const target_clip_idx = (action.idx === undefined) ? action.idx : null
-    let new_state, target_clip
-    if(target_clip_idx !== null){
-        new_state = {...state}
-        target_clip  = new_state[target_clip_idx]
+    let newState , target_idx, target_clip
+    if(action.id !== undefined){
+        newState = [...state]
+        target_idx = newState.findIndex((clip) => (clip.id === action.id));
+        target_clip = newState[target_idx];
     }
     switch(action.type){
         case 'ADD_CLIP':
-            return [...state, {...demoClips, id : action.id}]
+            return newState.concat({...demoClips, id : action.id});
         case 'DEL_CLIP':
-            return state.filter(([,idx]) => {
-                return idx !== target_clip_idx
-            })
-        case 'ADD_LOOP':    
-            target_clip.loops = [...target_clip.loops.slice(0, action.cur_idx+1), 
-            {...demoLoop, point : action.point},
-            ...target_clip.loops.slice(action.cur_idx+1)]
-            return new_state
+            return state.filter(item => {
+                return item.id !== action.id
+            });
+        case 'ADD_LOOP':
+            console.log(state[0].loops)
+            if(target_clip.loops[target_clip.curIdx].point !== action.point){
+                target_clip.loops.splice(target_clip.curIdx + 1, 0, {...demoLoop, point : action.point})
+                target_clip.curIdx += 1
+            }
+            return newState;
         case 'DEL_LOOP':
+            target_clip.loops.splice(action.idx, 1);
+            return newState;
+        case 'NEXT_LOOP':
+            if(target_clip.curIdx + 1 !== target_clip.loops.length)
+                target_clip.curIdx += 1
+            return newState
+        case 'PREV_LOOP':
+            if(target_clip.curIdx - 1 >= 0)
+                target_clip.curIdx -= 1
+            return newState
+        case 'EDIT_MEMO':
+            target_clip.loops[action.idx].memo = action.memo
+            return newState 
+        case 'SET_LINK':
+            target_clip.link = action.link
+            return newState    
         default:
             return [...state]
     }

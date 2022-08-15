@@ -1,5 +1,5 @@
 import React from "react";
-import {BrowserRouter, Routes, Route} from "react-router-dom";
+import {BrowserRouter, Routes, Route, useParams} from "react-router-dom";
 import Main from "./Main";
 import Looper from "./Looper";
 
@@ -13,7 +13,7 @@ class App extends React.Component {
             <BrowserRouter>
                 <Routes>
                     <Route path = "/" element = {<Main/>} />
-                    <Route path = "/looper" element = {<Looper/>}/>
+                    <Route path = "/looper/:userId" element = {<Looper/>} />
                 </Routes>
             </BrowserRouter>
         ) 

@@ -1,11 +1,47 @@
 import {v4 as  uuid} from 'uuid'
 
-//action-generator
-const addClip = () => ({
+//action-generator for Main
+export const addClip = () => ({
     type : 'ADD_CLIP',
     id : uuid()
 })
-const delClip = (idx) => ({
+export const delClip = (id) => ({
     type : 'DEL_CLIP',
+    id
+})
+
+//action-generator for Loop
+export const addLoop = (id, point) => ({
+    type : 'ADD_LOOP',
+    id,
+    point
+})
+
+export const delLoop = (id, idx) => ({
+    type : 'DEL_LOOP',
+    id,
     idx
+})
+
+export const editMemo = (id, idx, memo) => ({
+    type : 'EDIT_MEMO',
+    id,
+    idx,
+    memo
+})
+
+export const setLink = (id, link) => ({
+    type : 'SET_LINK',
+    id,
+    link
+})
+
+export const nextLoop = (id) => ({
+    type : 'NEXT_LINK',
+    id
+})
+
+export const prevLoop = (id) => ({
+    type : 'PREV_LINK',
+    id
 })
