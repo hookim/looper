@@ -37,11 +37,11 @@ export const setLink = (id, link) => ({
 })
 
 export const nextLoop = (id) => ({
-    type : 'NEXT_LINK',
+    type : 'NEXT_LOOP',
     id
 })
 
 export const prevLoop = (id) => ({
-    type : 'PREV_LINK',
+    type : 'PREV_LOOP',
     id
 })

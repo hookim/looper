@@ -8,7 +8,7 @@ const demoLoop = {
 //each video clips
 const demoClips = {
     title : "untitled",
-    link : null,
+    link : 'https://www.youtube.com/watch?v=Es4LMN2tuRU',
     id : null,
     curIdx : 0, 
     loops : [{...demoLoop, point: 0}]
@@ -28,8 +28,8 @@ const reducer = (state = [], action) => {
                 return item.id !== action.id
             });
         case 'ADD_LOOP':
-            console.log(state[0].loops)
-            if(target_clip.loops[target_clip.curIdx].point !== action.point){
+            console.log(target_clip.loops[target_clip.curIdx].point, action.point)
+            if((target_clip.loops[target_clip.curIdx].point).toString() !== (action.point).toString()){
                 target_clip.loops.splice(target_clip.curIdx + 1, 0, {...demoLoop, point : action.point})
                 target_clip.curIdx += 1
             }
