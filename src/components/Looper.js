@@ -3,6 +3,7 @@ import YouTube from "react-youtube";
 import {connect} from "react-redux";
 import {useParams} from "react-router-dom";
 import { addLoop, delLoop, setLink, nextLoop, prevLoop} from "../redux/action-generator";
+import '../styles/looper.css'
 
 const Looper = () => {
     const {userId} = useParams()
@@ -30,6 +31,7 @@ class WrappedLooper extends React.Component {
         this.addLoopToLooper = this.addLoopToLooper.bind(this)
         this.setLinkToLooper = this.setLinkToLooper.bind(this)
         this.setEventForKeyboard = this.setEventForKeyboard.bind(this)
+        this.saveToStore = this.saveToStore.bind(this)
     }
 
     // <helper function>
@@ -53,6 +55,7 @@ class WrappedLooper extends React.Component {
         //window event listener
         window.addEventListener('keydown', (e) => {
             if(e.key === 'ArrowDown'){
+                console.log(this.props.state)
                 this.addLoopToLooper((this.player.getCurrentTime()).toFixed(2))
             }
             else if (e.key === ' '){
@@ -77,13 +80,11 @@ class WrappedLooper extends React.Component {
                 this.stopLoop()
                 this.playLoop()
             }
-        }, true)
-        
+        }, true) 
     }
 
     //<event handlers>
     
-
     //// create new loop piece ////
     addLoopToLooper(point){
         this.props.dispatch(addLoop(this.clip.id, point))
@@ -113,6 +114,15 @@ class WrappedLooper extends React.Component {
     stopLoop(){
         this.player.pauseVideo()
     }
+    //// save to store every 30 seconds ////
+    async saveToStore(){
+        console.log(this.props)
+        while(1){
+            await new Promise(res => {setTimeout(res, 10 * 1000)})
+            localStorage.setItem('looper-state', JSON.stringify(this.props.state))
+        }
+    }
+
 
     // <API event handlers>
 
@@ -121,13 +131,13 @@ class WrappedLooper extends React.Component {
         this.player = e.target
         this.endTime = this.player.getDuration()
         this.setEventForKeyboard() //add keyboard event hanler for window and youtube player
-        console.log(document.getElementById('youtube-player').contentWindow.document)
     }
     async onPausePlayer(e){
         // document.getElementsByClassName('ytp-pause-overlay').style.display = 'none'
     }
-
+    
     render(){
+        this.saveToStore()
         return (
             <div>
                 <div className="youtube-controller">
@@ -148,7 +158,7 @@ class WrappedLooper extends React.Component {
 const LinkBar = (props) => {
     return (
         <div className = "link-bar">
-            <input type = "text"></input>
+            <input type = "text" defaultValue={props.link}></input>
             <button onClick = {props.setLinkToLooper}>Link</button>
         </div>
     )
@@ -169,7 +179,8 @@ const secFormat = (seconds) => {
 }
 const LoopNaviagator = (props) => {
     return (
-        <div className = "loop-navigator">
+        <div id = "loop-navigator">
+            <br></br>
             {props.loops.map((loop, idx) => {
                 return(
                     <div key = {idx}>
