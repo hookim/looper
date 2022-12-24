@@ -8,15 +8,18 @@ const demoLoop = {
 //each video clips
 const demoClips = {
     title : "untitled",
-    link : 'https://www.youtube.com/watch?v=Kz9njANzMQA',
+    link : 'https://www.youtube.com/watch?v=ENNnFu-rS9U',
     id : null,
     curIdx : 0, 
     loops : [{...demoLoop, point: 0}]
 }
+
+// reducer handles state concerning with action generated. action object need to contain data the state will be change with.
 const reducer = (state = [], action) => {
     let newState , target_idx, target_clip
     if(action.id !== undefined){
         newState = [...state]
+        // we will use pointer to the object in state object
         target_idx = newState.findIndex((clip) => (clip.id === action.id));
         target_clip = newState[target_idx];
     }
@@ -24,18 +27,22 @@ const reducer = (state = [], action) => {
         case 'ADD_CLIP':
             return newState.concat({...demoClips, id : action.id});
         case 'DEL_CLIP':
-            return state.filter(item => {
+            return newState.filter(item => {
                 return item.id !== action.id
             });
         case 'ADD_LOOP':
-            // console.log(target_clip.loops[target_clip.curIdx].point, action.point)
+            // if the point is already indexed then do nothing
             if((target_clip.loops[target_clip.curIdx].point).toString() !== (action.point).toString()){
                 target_clip.loops.splice(target_clip.curIdx + 1, 0, {...demoLoop, point : action.point})
                 target_clip.curIdx += 1
             }
             return newState;
         case 'DEL_LOOP':
-            target_clip.loops.splice(action.idx, 1);
+            if(action.idx){
+              target_clip.loops.splice(action.idx, 1);
+              if(action.idx <= target_clip.curIdx)
+                target_clip.curIdx -= 1;
+            }
             return newState;
         case 'NEXT_LOOP':
             if(target_clip.curIdx + 1 !== target_clip.loops.length)

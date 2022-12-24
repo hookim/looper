@@ -15,11 +15,15 @@ class WrappedMain extends React.Component{
     addClipToMain() {
         const addAction = addClip() 
         this.props.dispatch(addAction)
+        console.log(this.props.state)
+        localStorage.setItem('looper-state', JSON.stringify(this.props.state))
     }
     delClipFromMain(e) {
         const id = e.target.getAttribute('id')
         const delAction = delClip(id)
         this.props.dispatch(delAction)
+        console.log(this.props.state)
+        localStorage.setItem('looper-state', JSON.stringify(this.props.state))
     }
     render(){
         return (
