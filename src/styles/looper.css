@@ -2,3 +2,7 @@
     display: flex;
     background-image : url('../../public/resource/navbar.png');
 }
+
+#loop-navigator .current-loop{
+  background-color: red;
+}

@@ -2,7 +2,7 @@ import React from "react";
 import YouTube from "react-youtube";
 import {connect} from "react-redux";
 import {useParams} from "react-router-dom";
-import { addLoop, delLoop, setLink, nextLoop, prevLoop} from "../redux/action-generator";
+import { addLoop, delLoop, setLink, editMemo ,nextLoop, prevLoop, lockLoop, unlockLoop} from "../redux/action-generator";
 import '../styles/looper.css'
 
 const Looper = () => {
@@ -31,6 +31,9 @@ class WrappedLooper extends React.Component {
         this.setLinkToLooper = this.setLinkToLooper.bind(this)
         this.setEventForKeyboard = this.setEventForKeyboard.bind(this)
         this.saveToStore = this.saveToStore.bind(this)
+        this.changeMemo = this.changeMemo.bind(this)
+        this.lockClip = this.lockClip.bind(this)
+        this.unlockClip = this.unlockClip.bind(this)
       }
 
       //<LOOPER>
@@ -56,6 +59,7 @@ class WrappedLooper extends React.Component {
                 break;
               this.stopLoop()
             }
+            console.log('loop')
         }
       }
 
@@ -103,29 +107,39 @@ class WrappedLooper extends React.Component {
     // set keyboard control event for looper 
     setEventForKeyboard() {
         const youtubePlayerElement = document.getElementById('youtube-player')
-
+  
         //window event listener
         window.addEventListener('keydown', (e) => {
-            if(e.key === 'ArrowDown'){
-                console.log(this.clip.loops)
-                if(this.isPlaying)
-                  this.addLoopToLooper((this.player.getCurrentTime()).toFixed(2))
+          // only if the clip is unlocked, command keys work
+            console.log('e.key', e.key)
+            if(!this.clip.lock){
+                if(e.key === 'ArrowDown'){
+                    if(this.isPlaying)
+                      this.addLoopToLooper((this.player.getCurrentTime()).toFixed(2))
+                }
+                else if (e.key === ' '){
+                    if(!this.isPlaying)
+                      this.playLoop();
+                    else
+                      this.stopLoop();
+                }
+                else if (e.key === '['){
+                    this.props.dispatch(prevLoop(this.clip.id))
+                    this.stopLoop()
+                    this.playLoop()
+                }
+                else if (e.key === ']'){
+                    this.props.dispatch(nextLoop(this.clip.id))
+                    this.stopLoop()
+                    this.playLoop()
+                }
+                else if (e.key === 's'){
+                  this.saveToStore()
+                }
             }
-            else if (e.key === ' '){
-                if(!this.isPlaying)
-                  this.playLoop();
-                else
-                  this.stopLoop();
-            }
-            else if (e.key === '['){
-                this.props.dispatch(prevLoop(this.clip.id))
-                this.stopLoop()
-                this.playLoop()
-            }
-            else if (e.key === ']'){
-                this.props.dispatch(nextLoop(this.clip.id))
-                this.stopLoop()
-                this.playLoop()
+            if(e.key === 'Escape'){
+              this.unlockClip()
+              
             }
         }, true) 
     }
@@ -133,6 +147,7 @@ class WrappedLooper extends React.Component {
 
     // <API>
     async onReadyPlayer(e){
+        console.log('hello?')
         this.player = e.target
         this.endTime = this.player.getDuration()
 
@@ -153,12 +168,40 @@ class WrappedLooper extends React.Component {
             return link
         else   
             return link.split('=')[1]
-    }  
+    } 
+    
+    changeMemo(e){
+      this.props.dispatch(editMemo(this.clip.id, this.clip.curIdx, e.target.value))
+      console.log(this.clip.loops)
+    }
+
+    lockClip(){
+      console.log(this.clip.lock)
+      if(!this.clip.lock){
+        this.props.dispatch(lockLoop(this.clip.id))
+      }
+    }
+    unlockClip(){
+      if(this.clip.lock){
+        console.log('this.clip.lock' , this.clip.lock)
+        this.props.dispatch(unlockLoop(this.clip.id))
+      }
+    }
       
     render(){
         this.clip = this.props.state.find((clip) => {
             return ( clip.id === this.props.id )
         })
+        console.log(this.isPlaying, this.clip)
+        //for indicating current loop!! change class name. 
+        const elem = document.getElementsByClassName('delButtons')
+        for(let i = 0 ; i < elem.length; i++){
+          elem.item(i).classList.remove('current-loop')
+        }
+        const target = document.getElementById(`delButton-${this.clip.curIdx}`)
+        if(target)
+          target.classList.add('current-loop')
+
         return (
             <div>
                 <div className="youtube-controller">
@@ -168,7 +211,7 @@ class WrappedLooper extends React.Component {
                         onReady={this.onReadyPlayer}
                     />
                     <LoopNaviagator loops = {this.clip.loops} handler = {this.delLoopFromLooper}/>
-                    <MemoInput memo = {this.clip.memo}/>
+                    <MemoInput memo = {this.clip.loops[this.clip.curIdx].memo} handler = {this.changeMemo} locker = {this.lockClip}/>
                 </div>
             </div>
         );
@@ -205,7 +248,7 @@ const LoopNaviagator = (props) => {
                 return(
                     <div key = {idx}>
                         <div>{secFormat(loop.point)}</div>
-                        <button id ={`delButton-${idx}`} onClick={props.handler}>-</button>
+                        <button class = 'delButtons' id ={`delButton-${idx}`} onClick={props.handler}>-</button>
                     </div> 
                 )
             })}
@@ -213,12 +256,18 @@ const LoopNaviagator = (props) => {
     )
 }
 
-const MemoInput = (props) => {
-    return (
-        <div className = "memo-input">
-            <textarea defaultValue={props.memo} />
-        </div>
-    )
+class MemoInput extends React.Component {
+    constructor(props){
+      super(props);
+    }
+
+    render(){
+      return (
+          <div className = "memo-input">
+              <textarea value={this.props.memo} onChange={this.props.handler} onFocus={this.props.locker}/>
+          </div>
+        )
+    }
 }
 
 

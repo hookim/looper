@@ -10,7 +10,8 @@ const demoClips = {
     title : "untitled",
     link : 'https://www.youtube.com/watch?v=ENNnFu-rS9U',
     id : null,
-    curIdx : 0, 
+    curIdx : 0,
+    lock : false, 
     loops : [{...demoLoop, point: 0}]
 }
 
@@ -45,6 +46,7 @@ const reducer = (state = [], action) => {
             }
             return newState;
         case 'NEXT_LOOP':
+            console.log('NEXT!!!');
             if(target_clip.curIdx + 1 !== target_clip.loops.length)
                 target_clip.curIdx += 1
             return newState
@@ -58,6 +60,13 @@ const reducer = (state = [], action) => {
         case 'SET_LINK':
             target_clip.link = action.link
             return newState    
+        case 'LOCK_LOOP':
+            target_clip.lock = true
+            return newState
+        case 'UNLOCK_LOOP':
+            console.log('hello in switch-case')
+            target_clip.lock = false
+            return newState
         default:
             return [...state]
     }

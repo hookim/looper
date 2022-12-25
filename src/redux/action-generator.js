@@ -45,3 +45,13 @@ export const prevLoop = (id) => ({
     type : 'PREV_LOOP',
     id
 })
+
+export const lockLoop = (id) => ({
+  type : 'LOCK_LOOP',
+  id
+})
+
+export const unlockLoop = (id) => ({
+  type : 'UNLOCK_LOOP',
+  id
+})
