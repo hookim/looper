@@ -1,21 +1,27 @@
-//loop span for each clips
+
+
+/*
+Data structures for Looper.
+
+Clip data structure represents all the data about the clip.
+Loop data structure represents loop inside the clip.
+*/
 const demoLoop = {
-    //the point when down-arrow is pressed.
     point : null,
     memo : ""
 }
-
-//each video clips
 const demoClips = {
     title : "untitled",
-    link : 'https://www.youtube.com/watch?v=ENNnFu-rS9U',
+    link : null,
     id : null,
     curIdx : 0,
     lock : false, 
     loops : [{...demoLoop, point: 0}]
 }
 
-// reducer handles state concerning with action generated. action object need to contain data the state will be change with.
+/* 
+Reducer : It attaches to the redux store and set the rule to modify the data. 
+*/
 const reducer = (state = [], action) => {
     let newState , target_idx, target_clip
     if(action.id !== undefined){
@@ -60,6 +66,9 @@ const reducer = (state = [], action) => {
         case 'SET_LINK':
             target_clip.link = action.link
             return newState    
+        case 'SET_TITLE':
+            target_clip.title = action.title
+            return newState
         case 'LOCK_LOOP':
             target_clip.lock = true
             return newState

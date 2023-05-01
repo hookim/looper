@@ -8,6 +8,9 @@ class App extends React.Component {
         super(props)
     }
 
+    /*
+    Routing based on the url path
+    */
     render(){
         return(
             <BrowserRouter>

@@ -5,27 +5,32 @@ import { addClip, delClip} from "../redux/action-generator";
 
 const mapStateToProps = (state) => ({state})
 
-
 class WrappedMain extends React.Component{
     constructor(props){
         super(props)
         this.addClipToMain = this.addClipToMain.bind(this)
         this.delClipFromMain = this.delClipFromMain.bind(this)
     }
+
+    /*
+    As the name obviously suggests These methods below modify the clip. 
+    A clip is the video that we want to chop down and turn them into loops.
+    You can make multiple loops for a clip. 
+    And Looper controls the whole system.  
+    */
     addClipToMain() {
         const addAction = addClip() 
         this.props.dispatch(addAction)
         console.log(this.props.state)
-        localStorage.setItem('looper-state', JSON.stringify(this.props.state))
     }
     delClipFromMain(e) {
         const id = e.target.getAttribute('id')
         const delAction = delClip(id)
-        this.props.dispatch(delAction)
-        console.log(this.props.state)
-        localStorage.setItem('looper-state', JSON.stringify(this.props.state))
+        this.props.dispatch(delAction)  
     }
+
     render(){
+        localStorage.setItem('looper-state', JSON.stringify(this.props.state))
         return (
             <div>
                 <button onClick = {this.addClipToMain}>+</button>

@@ -36,6 +36,12 @@ export const setLink = (id, link) => ({
     link
 })
 
+export const setTitle = (id, title) => ({
+  type : 'SET_TITLE',
+  id,
+  title
+})
+
 export const nextLoop = (id) => ({
     type : 'NEXT_LOOP',
     id
