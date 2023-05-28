@@ -5,6 +5,8 @@ Data structures for Looper.
 
 Clip data structure represents all the data about the clip.
 Loop data structure represents loop inside the clip.
+
+The unit of point is in miliseconds.
 */
 const demoLoop = {
     point : null,
@@ -39,9 +41,27 @@ const reducer = (state = [], action) => {
             });
         case 'ADD_LOOP':
             // if the point is already indexed then do nothing
-            if((target_clip.loops[target_clip.curIdx].point).toString() !== (action.point).toString()){
-                target_clip.loops.splice(target_clip.curIdx + 1, 0, {...demoLoop, point : action.point})
-                target_clip.curIdx += 1
+            if(target_clip.loops[target_clip.curIdx].point !== action.point){
+                const  nextLoop = target_clip.loops[target_clip.curIdx + 1];
+                let nextPoint;
+                if(nextLoop !== undefined) 
+                  nextPoint = nextLoop.point;  
+                const newPoint = action.point;
+
+                let availMore = false;
+                // if new point is in between the loops
+                if(nextPoint !== undefined && newPoint < nextPoint)
+                  availMore = true
+                /* 
+                if it is at the end of the loops. 
+                we don't have to check any further becasue this reducer is called only when the point is within the valid range.
+                */
+                if(nextPoint === undefined)
+                  availMore = true;
+                if(availMore){
+                  target_clip.loops.splice(target_clip.curIdx + 1, 0, {...demoLoop, point : newPoint});
+                  target_clip.curIdx += 1;
+                }
             }
             return newState;
         case 'DEL_LOOP':
@@ -52,7 +72,6 @@ const reducer = (state = [], action) => {
             }
             return newState;
         case 'NEXT_LOOP':
-            console.log('NEXT!!!');
             if(target_clip.curIdx + 1 !== target_clip.loops.length)
                 target_clip.curIdx += 1
             return newState

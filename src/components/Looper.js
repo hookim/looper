@@ -48,14 +48,14 @@ class WrappedLooper extends React.Component {
       async playLoop(){
         const contextIdx = this.clip.curIdx; 
         const loopLen = this.clip.loops.length;
-        const startSeconds = this.clip.loops[this.clip.curIdx].point;
-        const endSeconds = this.clip.loops[this.clip.curIdx + 1] === undefined ?  
+        const startMiliSeconds = this.clip.loops[this.clip.curIdx].point;
+        const endMiliSeconds = this.clip.loops[this.clip.curIdx + 1] === undefined ?  
             this.endTime :
             this.clip.loops[this.clip.curIdx + 1].point;
-        const interval = (endSeconds - startSeconds) * 1000
+        const interval = endMiliSeconds - startMiliSeconds;
         
         while(contextIdx === this.clip.curIdx && loopLen === this.clip.loops.length){ 
-            this.player.seekTo(startSeconds, true)
+            this.player.seekTo(startMiliSeconds/1000 , true)
             this.player.playVideo()
             this.isPlaying = true;
             await new Promise(res => setTimeout(res, interval))
@@ -98,11 +98,14 @@ class WrappedLooper extends React.Component {
     /* 
     Create new loop
     
-    Changes the state using dispatch. and save the changed to the storage.
+    Changes the state using dispatch. and save the changed to the storage. 
+    Only checks whether the point is within the valid range. (0 ~ getDurationTime && greater than current point)
     */
     addLoopToLooper(point){
-      this.props.dispatch(addLoop(this.clip.id, point))
-      this.saveToStore(); 
+      if((this.clip.loops[this.clip.curIdx].point < point) && (point > 0) && (point < this.endTime)){
+        this.props.dispatch(addLoop(this.clip.id, point))
+        this.saveToStore();   
+      }
     }
 
     /*
@@ -153,8 +156,9 @@ class WrappedLooper extends React.Component {
         window.addEventListener('keydown', (e) => {
             if(!this.clip.lock){
                 if(e.key === 'ArrowDown'){
-                    if(this.isPlaying)
-                      this.addLoopToLooper((this.player.getCurrentTime()).toFixed(2))
+                    if(this.isPlaying){
+                      this.addLoopToLooper(Math.floor(this.player.getCurrentTime() * 1000));
+                    }
                 }
                 else if (e.key === ' '){
                     if(!this.isPlaying)
@@ -187,9 +191,10 @@ class WrappedLooper extends React.Component {
     */ 
     async onReadyPlayer(e){
         this.player = e.target
-        this.endTime = this.player.getDuration();
+        this.endTime = this.player.getDuration() * 1000;
         this.setEventForKeyboard(); 
         this.initAutoSave();
+        window.focus();
     }
 
     sleep(ms){
@@ -263,25 +268,12 @@ TitleBar Compoent : input value for the title of the clip
 const TitleBar = (props) =>{
   return (
     <div className = "title-bar">
-      <input type = "text" defaultValue={props.title} onChange = {props.locker}></input>
+      <input type = "text" defaultValue={props.title} onFocus = {props.locker}></input>
       <button onClick = {props.setTitleToLooper} >Title</button>
     </div>
   )
 }
 
-
-const secFormat = (seconds) => {
-    let min = Math.floor(seconds / 60)
-    if(min < 10) min = `0${min}`
-    else min = `${min}`
-
-    let sec = (seconds % 60)
-    if(sec < 10) sec = `0${sec}`
-    else sec = `${sec}`
-
-    return min + ":" + sec
-    
-}
 /*
 LoopNavigator Component : the points where loops were created and the navigator to the points.
 */
@@ -291,14 +283,24 @@ const LoopNaviagator = (props) => {
             <br></br>
             {props.loops.map((loop, idx) => {
                 return(
-                    <div key = {idx}>
-                        <div>{secFormat(loop.point)}</div>
-                        <button class = 'delButtons' id ={`delButton-${idx}`} onClick={props.handler}>-</button>
+                    <div key = {idx} className='loop-navigators'>
+                        <div>{prettyMs(loop.point)}</div>
+                        <button className = 'delButtons' id ={`delButton-${idx}`} onClick={props.handler}>-</button>
                     </div> 
                 )
             })}
         </div>
     )
+}
+const prettyMs = (ms) => {
+  const min = Math.floor(ms / (1000 * 60)); 
+  const sec = (ms / 1000).toFixed(1);
+  let ret = ``;
+  if(min){
+    ret += `${min}m`
+  } 
+  ret += `\n${sec}s`;
+  return ret;
 }
 
 /*
@@ -312,8 +314,8 @@ const LockButton = (props) => {
           props.dispatch(unlockLoop(props.clipId));
         else
           props.dispatch(lockLoop(props.clipId));
-      }}>LOCK-BUTTON</button>
-      <span>{props.isLocked ? "LOCKED" : "UNLOCKED"}</span>
+      }}>EDIT-BUTTON</button>
+      <span>{props.isLocked ? "LOCKED" : "CONTROL-MODE"}</span>
     </div>
   )
 }

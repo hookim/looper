@@ -23,28 +23,57 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded())
 
 app.post('/login', async (req, res) => {
-  console.log('/login')
   const {userId, userPw} = req.body
   const result = await dbQuery(useCases.loginUsers, [userId, userPw])
-  console.log(result)
   if(result.length > 0){
     req.session.validUser = true 
     res.redirect('/main')
   }else res.redirect('/login')
+})
 
+app.delete('/logout',(req, res) => {
+  console.log(req.session)
+  req.session.destroy(err => {
+    if(err){
+      console.log(err)
+      return res.status(500).send('Internal Server Error')
+    }
+    res.clearCookie('connect.sid')
+    // return res.redirect('/login')
+    return res.status(200).end()
+  })
+})
+
+app.post('/register', async (req, res) => {
+  const {usrNickname, usrPw, usrId, registTime} = req.body
+  const result = await dbQuery(useCases.registerAccount, [usrId, usrNickname, registTime, usrPw])
+  if(result){
+    res.redirect('/login')
+  }
+  
+})
+
+app.post('/id-check' , async (req, res) => {
+    const userId  = req.body.val
+    const result = await dbQuery(useCases.checkUserId, userId)
+    console.log('hello?')
+    if(result.length)
+      res.json(false)
+    else
+      res.json(true)
 })
 
 app.get('/session-check', (req, res) => {
   if(req.session.validUser)
-    res.status(200)
+    res.json(true)
   else
-    res.status(403)
+    res.json(false)
 })
 
-// app.get('*',  (req, res) => {
-//   console.log('HELOO!')
-//   // res.sendFile( path.resolve(__dirname, "../build/index.html"))
-// })
+app.get('*',  (req, res) => {
+  // console.log('HELOO!')
+  // // res.sendFile( path.resolve(__dirname, "../build/index.html"))
+})
 
 
 app.listen(port, () => {

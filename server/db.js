@@ -13,23 +13,25 @@ const useCases = {
   'editLoop' : 'updateMemos',
   'deleteAccount' : 'deleteUsers',
   'deleteLooper' : 'deleteLoopers',
-  'deleteLoop' : 'deleteMemos'
+  'deleteLoop' : 'deleteMemos',
+  'checkUserId' : 'selectUsersById'
   }
   
 const paramQuery = {
   'test' : 'SELECT * FROM Users',
-  'selectUsers' : 'SELECT user_id, password, register_date FROM Users WHERE user_id = ? AND password = ?',
+  'selectUsers' : 'SELECT user_id, user_nickname, password, register_date FROM Users WHERE user_id = ? AND password = ?',
   'selectLoopers' : 'SELECT looper_id, user_id, created_date, title, url FROM Loopers WHERE user_id = ?',
   'selectMemos' : 'SELECT id, timestamp, looper_id, memo FROM Memos WHERE looper_id = ?',
-  'insertUsers' : 'INSERT INTO Users (user_id, register_date, password) VALUES (?, ?, ?)',
+  'insertUsers' : 'INSERT INTO Users (user_id, user_nickname, register_date, password) VALUES (?, ?, ?, ?)',
   'insertLoopers' : 'INSERT INTO Loopers (looper_id, user_id, created_date, title, url) VALUES (?, ?, ?, ? ,? )',
   'insertMemos' : 'INSERT INTO Memos (id, timestamp, looper_id, memo) VALUES (?, ?, ?, ?)',
-  'updateUsers' : 'UPDATE Users SET (password = ?) WHERE user_id = ?',
+  'updateUsers' : 'UPDATE Users SET (password = ?, user_nickname = ?) WHERE user_id = ?',
   'updateLoopers' : 'UPDATE Loopers SET (title = ? , url =? ) WHERE looper_id = ?',
   'updateMemos' : 'UPDATE Memos SET (memo = ?) WHERE id = ?',
   'deleteUsers' : 'DELETE FROM Users WHERE user_id = ?',
   'deleteLoopers' : 'DELETE FROM Loopers WHERE looper_id = ?',
-  'deleteMemos' : 'DELETE FROM Memos WHERE id = ?'
+  'deleteMemos' : 'DELETE FROM Memos WHERE id = ?',
+  'selectUsersById' : 'SELECT * FROM Users WHERE user_id = ?'
   }
 
 

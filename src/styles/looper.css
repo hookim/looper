@@ -6,3 +6,7 @@
 #loop-navigator .current-loop{
   background-color: red;
 }
+
+.loop-navigators{
+  margin : 1%;
+}
