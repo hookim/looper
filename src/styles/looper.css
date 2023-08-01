@@ -6,3 +6,11 @@
 #loop-navigator .current-loop{
   background-color: red;
 }
+
+.looper__helper--hidden{
+  display : none;
+}
+
+.looper__helper--show{
+  display : block;
+}

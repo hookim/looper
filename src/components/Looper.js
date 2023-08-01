@@ -156,7 +156,7 @@ class WrappedLooper extends React.Component {
                     if(this.isPlaying)
                       this.addLoopToLooper((this.player.getCurrentTime()).toFixed(2))
                 }
-                else if (e.key === ' '){
+                else if (e.key === 'p' || e.key === 'P'){
                     if(!this.isPlaying)
                       this.playLoop()
                     else
@@ -172,10 +172,11 @@ class WrappedLooper extends React.Component {
                     this.stopLoop()
                     this.playLoop()
                 }
-                else if (e.key === 's'){
+                else if (e.key === 's' || e.key === 'S'){
                   this.saveToStore()
                 }
             }
+            // unlock it
             if(e.key === 'Escape'){
               this.lockUnlockClip()
             }
@@ -203,7 +204,13 @@ class WrappedLooper extends React.Component {
     } 
 
     changeMemo(e){ 
-      this.props.dispatch(editMemo(this.clip.id, this.clip.curIdx, e.target.value))
+      if(this.clip.lock){
+        e.target.disabled = false
+        this.props.dispatch(editMemo(this.clip.id, this.clip.curIdx, e.target.value))
+      }
+      else 
+        e.target.disabled = true
+      
     }
     lockUnlockClip(){
       if(!this.clip.lock)
@@ -230,14 +237,34 @@ class WrappedLooper extends React.Component {
             <div>
                 <div className="youtube-controller">
                     <LinkBar setLinkToLooper ={this.setLinkToLooper} link = {this.clip.link} locker ={this.lockUnlockClip}/>
-                    <TitleBar setTitleToLooper ={this.setTitleToLooper} title = {this.clip.title} locker ={this.lockUnlockClip}/>
+                    <TitleBar setTitleToLooper ={this.setTitleToLooper} title = {this.clip.title}/>
                     <YouTube id = "youtube-player" 
                         videoId={this.getYoutubeVideoId(this.clip.link)} 
                         onReady={this.onReadyPlayer}
                     />
-                    <LockButton isLocked ={this.clip.lock} clipId = {this.clip.id} dispatch = {this.props.dispatch}/>
+                    <LockButton isLocked ={this.clip.lock}/>
                     <LoopNaviagator loops = {this.clip.loops} handler = {this.delLoopFromLooper}/>
-                    <MemoInput memo = {this.clip.loops[this.clip.curIdx].memo} handler = {this.changeMemo} locker = {this.lockUnlockClip}/>
+                    <MemoInput lock = {this.clip.lock} memo = {this.clip.loops[this.clip.curIdx].memo} handler = {this.changeMemo} locker = {this.lockUnlockClip}/>
+                    <div class = "looper__helper--hidden" id = "helper">
+                        <ul>
+                          <li>Nav mode is required to control video.</li>
+                          <li>Memo mode is required to take notes.</li>
+                          <li>Esc : toggle the modes</li>
+                          <li>⬇ : create loop point</li>
+                          <li>p : play or pause the video</li>
+                          <li>s : save current looper state to local stroage. but autosave is enabled as well!</li>
+                          <li>[ : previous loop point</li>
+                          <li>] : next loop point</li>
+                        </ul>
+                      <button onClick = {() => {
+                        const helper = document.getElementById('helper')
+                        helper.className = "looper__helper--hidden"
+                      }}>X</button>
+                    </div>
+                    <button onClick = {() => {
+                      const helper = document.getElementById('helper')
+                      helper.className = "looper__helper--show"
+                    }}>Help</button>
                 </div>
             </div>
         );
@@ -263,7 +290,7 @@ TitleBar Compoent : input value for the title of the clip
 const TitleBar = (props) =>{
   return (
     <div className = "title-bar">
-      <input type = "text" defaultValue={props.title} onChange = {props.locker}></input>
+      <input type = "text" defaultValue={props.title}></input>
       <button onClick = {props.setTitleToLooper} >Title</button>
     </div>
   )
@@ -302,19 +329,11 @@ const LoopNaviagator = (props) => {
 }
 
 /*
-LockButton Component : When it is locked, You cannot control the video with keyboards.
+LockButton Component : When it is locked, You cannot control the video with keyboards. only memo!
 */
 const LockButton = (props) => {
   return (
-    <div>
-      <button onClick = {() => {
-        if(props.isLocked)
-          props.dispatch(unlockLoop(props.clipId));
-        else
-          props.dispatch(lockLoop(props.clipId));
-      }}>LOCK-BUTTON</button>
-      <span>{props.isLocked ? "LOCKED" : "UNLOCKED"}</span>
-    </div>
+      <span>{props.isLocked ? "MEMO MODE" : "NAV MODE"}</span>
   )
 }
 
@@ -325,11 +344,14 @@ class MemoInput extends React.Component {
     constructor(props){
       super(props);
     }
-
+    componentDidUpdate(){
+      const memo = document.getElementById('memo')
+      memo.focus()
+    }
     render(){
       return (
           <div className = "memo-input">
-              <textarea value={this.props.memo} onChange={this.props.handler} onFocus={this.props.locker}/>
+              <textarea id = 'memo' value={this.props.memo} onChange={this.props.handler} disabled = {!this.props.lock}/>
           </div>
         )
     }
