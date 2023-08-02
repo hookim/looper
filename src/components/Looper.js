@@ -198,9 +198,13 @@ class WrappedLooper extends React.Component {
     }
     getYoutubeVideoId(link) {
         if (link === null || link === undefined)
-            return link
-        else   
-            return link.split('=')[1].split('&')[0]
+          return link
+        else if(link.split('=')[0] === link ){
+          const parsed = link.split('/')
+          return parsed[parsed.length - 1]
+        }
+        else 
+          return link.split('=')[1].split('&')[0]
     } 
 
     changeMemo(e){ 
