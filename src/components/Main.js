@@ -36,7 +36,7 @@ class WrappedMain extends React.Component{
                 <button onClick = {this.addClipToMain}>+</button>
                 {this.props.state.map((item, idx) => {
                     return (<div key = {idx}>
-                                <Link key = {idx} to = {`/looper/${item.id}`}>{item.title}</Link>
+                                <Link key = {idx} to = {`/enjoy/${item.id}`}>{item.title}</Link>
                                 <button id = {item.id} onClick = {this.delClipFromMain}>-</button>
                             </div>
                             )

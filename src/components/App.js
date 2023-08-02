@@ -1,5 +1,5 @@
 import React from "react";
-import {BrowserRouter, Routes, Route, useParams} from "react-router-dom";
+import {HashRouter, Routes, Route} from "react-router-dom";
 import Main from "./Main";
 import Looper from "./Looper";
 
@@ -13,12 +13,12 @@ class App extends React.Component {
     */
     render(){
         return(
-            <BrowserRouter>
+            <HashRouter>
                 <Routes>
                     <Route path = "/" element = {<Main/>} />
-                    <Route path = "/looper/:userId" element = {<Looper/>} />
+                    <Route path = "/enjoy/:userId" element = {<Looper/>} />
                 </Routes>
-            </BrowserRouter>
+            </HashRouter>
         ) 
     }
 

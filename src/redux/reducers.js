@@ -52,7 +52,6 @@ const reducer = (state = [], action) => {
             }
             return newState;
         case 'NEXT_LOOP':
-            console.log('NEXT!!!');
             if(target_clip.curIdx + 1 !== target_clip.loops.length)
                 target_clip.curIdx += 1
             return newState
@@ -73,7 +72,6 @@ const reducer = (state = [], action) => {
             target_clip.lock = true
             return newState
         case 'UNLOCK_LOOP':
-            console.log('hello in switch-case')
             target_clip.lock = false
             return newState
         default:
