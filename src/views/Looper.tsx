@@ -237,39 +237,44 @@ class WrappedLooper extends React.Component {
           target.classList.add('current-loop')
 
         return (
-            <div>
-                <div className="youtube-controller">
-                    <LinkBar setLinkToLooper ={this.setLinkToLooper} link = {this.clip.link} locker ={this.lockUnlockClip}/>
-                    <TitleBar setTitleToLooper ={this.setTitleToLooper} title = {this.clip.title}/>
+           
+            <div className="grid grid-cols-2">
+                <div>
                     <YouTube id = "youtube-player" 
                         videoId={this.getYoutubeVideoId(this.clip.link)} 
                         onReady={this.onReadyPlayer}
+                        className="flex justify-center border-s-8"
                     />
+                </div>
+                <div className="border-solid border-black border-2 p-2">
+                    <LinkBar setLinkToLooper ={this.setLinkToLooper} link = {this.clip.link} locker ={this.lockUnlockClip}/>
+                    <TitleBar setTitleToLooper ={this.setTitleToLooper} title = {this.clip.title}/>
                     <LockButton isLocked ={this.clip.lock}/>
                     <LoopNaviagator loops = {this.clip.loops} handler = {this.delLoopFromLooper}/>
                     <MemoInput lock = {this.clip.lock} memo = {this.clip.loops[this.clip.curIdx].memo} handler = {this.changeMemo} locker = {this.lockUnlockClip}/>
-                    <div class = "looper__helper--hidden" id = "helper">
-                        <ul>
-                          <li>Nav mode is required to control video.</li>
-                          <li>Memo mode is required to take notes.</li>
-                          <li>Esc : toggle the modes</li>
-                          <li>⬇ : create loop point</li>
-                          <li>p : play or pause the video</li>
-                          <li>s : save current looper state to local stroage. but autosave is enabled as well!</li>
-                          <li>[ : previous loop point</li>
-                          <li>] : next loop point</li>
-                        </ul>
-                      <button onClick = {() => {
-                        const helper = document.getElementById('helper')
-                        helper.className = "looper__helper--hidden"
-                      }}>X</button>
-                    </div>
-                    <button onClick = {() => {
-                      const helper = document.getElementById('helper')
-                      helper.className = "looper__helper--show"
-                    }}>Help</button>
                 </div>
+                {/* <div className = "hidden" id = "helper">
+                    <ul>
+                      <li>Nav mode is required to control video.</li>
+                      <li>Memo mode is required to take notes.</li>
+                      <li>Esc : toggle the modes</li>
+                      <li>⬇ : create loop point</li>
+                      <li>p : play or pause the video</li>
+                      <li>s : save current looper state to local stroage. but autosave is enabled as well!</li>
+                      <li>[ : previous loop point</li>
+                      <li>] : next loop point</li>
+                    </ul>
+                  <button onClick = {() => {
+                    const helper = document.getElementById('helper')
+                    helper.className = "looper__helper--hidden"
+                  }}>X</button>
+                </div>
+                <button onClick = {() => {
+                  const helper = document.getElementById('helper')
+                  helper.className = "looper__helper--show"
+                }}>Help</button> */}
             </div>
+            
         );
     }
 }
@@ -280,7 +285,7 @@ LinkBar Component : input value for the URL of the clip
 */
 const LinkBar = (props) => {
     return (
-        <div className = "link-bar">
+        <div className = "">
             <input type = "text" defaultValue={props.link} onChange = {props.locker}></input>
             <button onClick = {props.setLinkToLooper}>Link</button>
         </div>

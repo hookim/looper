@@ -18,6 +18,7 @@ class WrappedMain extends React.Component{
     You can make multiple loops for a clip. 
     And Looper controls the whole system.  
     */
+   
     addClipToMain() {
         const addAction = addClip() 
         this.props.dispatch(addAction)
