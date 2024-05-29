@@ -3,7 +3,6 @@ import YouTube from "react-youtube";
 import {connect} from "react-redux";
 import {useParams} from "react-router-dom";
 import { addLoop, delLoop, setLink, setTitle, editMemo , nextLoop, prevLoop, lockLoop, unlockLoop} from "../redux/action-generator";
-import '../styles/looper.css'
 
 const Looper = () => {
     const {userId} = useParams() // Parse paramter from url

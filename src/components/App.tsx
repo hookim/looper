@@ -4,7 +4,7 @@ import Main from "./Main";
 import Looper from "./Looper";
 
 class App extends React.Component {
-    constructor(props){
+    constructor(props : {name? : string}){
         super(props)
     }
 
