@@ -17,7 +17,8 @@ class App extends React.Component {
                 
                 <BrowserRouter>
                     <AppHeader/>
-                    <div className="w-6/12 m-auto flex justify-center rounded-b-md shadow-lg">
+                    <div className="border-b border-solid border-gray-900 mt-3 mb-3"></div>
+                    <div className="w-10/12 m-auto flex justify-center rounded-b-md shadow-lg">
                         <Routes>
                             <Route path = "/" element = {<Main/>} />
                             <Route path = "/enjoy/:userId" element = {<Looper/>} />

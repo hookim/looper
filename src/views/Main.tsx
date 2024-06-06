@@ -61,9 +61,9 @@ class WrappedMain extends React.Component{
                     <div className="text-2xl text-center w-4/5">비디오 목록</div>
                     <button onClick = {this.addClipToMain} className="text-lg p-2 rounded-md bg-gray-700 hover:text-gray-950 absolute right-0" >생성하기</button>
                 </div>
-                <div className="grid grid-cols-3  border-solid border-gray-900 border rounded-md">
+                <div className="grid grid-cols-1  border-solid border-gray-900 border rounded-md p-2">
                     {this.props.state.map(item => {
-                        return (<div key = {item.id} className="border-solid border-gray-900 border rounded-md m-2 h-36 relative">
+                        return (<div key = {item.id} className="border-solid border-gray-800 border rounded-md h-28 w-10/12 relative m-auto mb-2">
                                     <div className="h-6 bg-gray-800 absolute top-0 left-0 w-full rounded-t-md flex justify-end ">
                                         <button onClick={() => this.toggleVisiblity('context-' + item.id)}>
                                             <Dots className="text-white w-4 h-4"/>

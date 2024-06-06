@@ -61,3 +61,9 @@ export const unlockLoop = (id) => ({
   type : 'UNLOCK_LOOP',
   id
 })
+
+export const jumpLoop = (id, newIdx) => ({
+  type : 'JUMP_LOOP',
+  id,
+  newIdx
+})

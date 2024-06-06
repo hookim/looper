@@ -2,7 +2,16 @@ import React from "react";
 import YouTube from "react-youtube";
 import {connect} from "react-redux";
 import {useParams} from "react-router-dom";
-import { addLoop, delLoop, setLink, setTitle, editMemo , nextLoop, prevLoop, lockLoop, unlockLoop} from "../redux/action-generator";
+import { addLoop, delLoop, setLink, setTitle, editMemo , nextLoop, prevLoop, lockLoop, unlockLoop, jumpLoop} from "../redux/action-generator";
+import Lock from '/assets/lock.svg?react'
+import Unlock from '/assets/unlock.svg?react'
+import DeleteBtn from "/assets/delete.svg?react"
+import NextBtn from "/assets/next.svg?react"
+import PrevBtn from "/assets/prev.svg?react"
+import PlayBtn from "/assets/play.svg?react"
+import PauseBtn from "/assets/pause.svg?react"
+
+
 
 const Looper = () => {
     const {userId} = useParams() // Parse paramter from url
@@ -16,8 +25,8 @@ class WrappedLooper extends React.Component {
       this.clip = this.props.state.find((clip) => {
         return ( clip.id === this.props.id )
       })
-      this.isPlaying = false; 
-      this.idx = 0;
+      this.state = {isPlaying : false}
+    //   this.idx = 0;
 
       this.playLoop = this.playLoop.bind(this)
       this.stopLoop = this.stopLoop.bind(this)
@@ -31,6 +40,9 @@ class WrappedLooper extends React.Component {
       this.saveToStore = this.saveToStore.bind(this)
       this.changeMemo = this.changeMemo.bind(this)
       this.lockUnlockClip = this.lockUnlockClip.bind(this)
+      this.nextLoop = this.nextLoop.bind(this)
+      this.prevLoop = this.prevLoop.bind(this)
+      this.jumpToLoop = this.jumpToLoop.bind(this)
     }
 
       /*
@@ -45,25 +57,45 @@ class WrappedLooper extends React.Component {
         3) clip is explicitly paused by user
       */
       async playLoop(){
+        console.log(this.clip.curIdx)
         const contextIdx = this.clip.curIdx; 
         const loopLen = this.clip.loops.length;
         const startSeconds = this.clip.loops[this.clip.curIdx].point;
-        const endSeconds = this.clip.loops[this.clip.curIdx + 1] === undefined ?  
-            this.endTime :
-            this.clip.loops[this.clip.curIdx + 1].point;
-        const interval = (endSeconds - startSeconds) * 1000
-        
+        const endSeconds = this.clip.loops[this.clip.curIdx + 1]?.point ?? this.endTime
+        const interval = (endSeconds - startSeconds) * 1000    
+    
         while(contextIdx === this.clip.curIdx && loopLen === this.clip.loops.length){ 
+    
             this.player.seekTo(startSeconds, true)
             this.player.playVideo()
-            this.isPlaying = true;
+            this.setState({isPlaying : true});
+
             await new Promise(res => setTimeout(res, interval))
             if(contextIdx === this.clip.curIdx && loopLen === this.clip.loops.length){
-              if(!this.isPlaying)
+              if(!this.state.isPlaying)
                 break;
               this.stopLoop()
             }
         }
+      }
+
+      nextLoop(){
+        console.log(this.clip.curIdx)
+        this.props.dispatch(nextLoop(this.clip.id))
+        this.stopLoop()
+        this.playLoop()
+
+        document.getElementById(`looper-display-${this.clip.curIdx}`)?.scrollIntoView()
+
+      }
+
+      prevLoop(){
+        this.props.dispatch(prevLoop(this.clip.id))
+        this.stopLoop()
+        this.playLoop()
+
+        
+        document.getElementById(`looper-display-${this.clip.curIdx}`)?.scrollIntoView()
       }
 
       /*
@@ -73,7 +105,7 @@ class WrappedLooper extends React.Component {
       */
       stopLoop(){
           this.player.pauseVideo();
-          this.isPlaying = false;
+          this.setState({isPlaying : false});
       }
 
       /*
@@ -102,6 +134,8 @@ class WrappedLooper extends React.Component {
     addLoopToLooper(point){
       this.props.dispatch(addLoop(this.clip.id, point))
       this.saveToStore(); 
+
+      document.getElementById(`looper-display-${this.clip.curIdx}`)?.scrollIntoView()
     }
 
     /*
@@ -112,13 +146,14 @@ class WrappedLooper extends React.Component {
     On successful deletion, It saves to the storage and playLoop. 
     playLoop function decides whether to play the clip or not so we don't have to care about that here. 
     */
-    delLoopFromLooper(e){
-      const idx = parseInt(e.target.id.split('-')[1])
+    delLoopFromLooper(idx){
       if(idx){
-        this.props.dispatch(delLoop(this.clip.id, idx))
-        this.saveToStore();
+        this.props.dispatch(delLoop(this.clip.id, idx ))
+        this.stopLoop()
         this.playLoop();
       }
+
+      console.log(this.clip)
     }
 
     /*
@@ -131,6 +166,7 @@ class WrappedLooper extends React.Component {
         this.props.dispatch(setLink(this.clip.id, newLink))
         this.saveToStore();
         window.location.reload();
+
     }
 
     /*
@@ -139,6 +175,8 @@ class WrappedLooper extends React.Component {
     setTitleToLooper(e){
       const newTitle = e.target.parentNode.children[0].value
       this.props.dispatch(setTitle(this.clip.id, newTitle));
+      window.alert("제목 수정에 성공했습니다.")
+      window.location.reload();
     }
 
     /* 
@@ -152,24 +190,25 @@ class WrappedLooper extends React.Component {
         window.addEventListener('keydown', (e) => {
             if(!this.clip.lock){
                 if(e.key === 'ArrowDown'){
-                    if(this.isPlaying)
-                      this.addLoopToLooper((this.player.getCurrentTime()).toFixed(2))
+                    if(this.state.isPlaying)
+                      this.addLoopToLooper((Math.floor(this.player.getCurrentTime())))
+                    
+                    document.getElementById(`looper-display-${this.clip.curIdx}`)?.scrollIntoView()
+                    console.log(document.getElementById(`looper-display-${this.clip.curIdx}`))
                 }
                 else if (e.key === 'p' || e.key === 'P'){
-                    if(!this.isPlaying)
+                    if(!this.state.isPlaying)
                       this.playLoop()
                     else
                       this.stopLoop()
                 }
                 else if (e.key === '['){
-                    this.props.dispatch(prevLoop(this.clip.id))
-                    this.stopLoop()
-                    this.playLoop()
+                    this.prevLoop();
+                    
+
                 }
                 else if (e.key === ']'){
-                    this.props.dispatch(nextLoop(this.clip.id))
-                    this.stopLoop()
-                    this.playLoop()
+                    this.nextLoop()
                 }
                 else if (e.key === 's' || e.key === 'S'){
                   this.saveToStore()
@@ -207,12 +246,10 @@ class WrappedLooper extends React.Component {
     } 
 
     changeMemo(e){ 
-      if(this.clip.lock){
-        e.target.disabled = false
+      if(this.clip.lock){   
         this.props.dispatch(editMemo(this.clip.id, this.clip.curIdx, e.target.value))
       }
-      else 
-        e.target.disabled = true
+     
       
     }
     lockUnlockClip(){
@@ -220,6 +257,16 @@ class WrappedLooper extends React.Component {
         this.props.dispatch(lockLoop(this.clip.id));
       else 
         this.props.dispatch(unlockLoop(this.clip.id));
+    }
+
+    jumpToLoop(idx){
+        // console.log(this.clip.curIdx)
+        // console.log(e.target)
+        // console.log(e.target.id.split('-')[2])
+        this.props.dispatch(jumpLoop(this.clip.id, idx))
+        this.stopLoop()
+        this.playLoop()
+        console.log(this.clip.curIdx)
     }
  
 
@@ -236,23 +283,83 @@ class WrappedLooper extends React.Component {
         if(target)
           target.classList.add('current-loop')
 
+
         return (
-           
-            <div className="grid grid-cols-2">
-                <div>
-                    <YouTube id = "youtube-player" 
-                        videoId={this.getYoutubeVideoId(this.clip.link)} 
-                        onReady={this.onReadyPlayer}
-                        className="flex justify-center border-s-8"
-                    />
+        <div className="w-full h-full">
+            <div className="mb-2 relative">
+                <div className = "text-center w-11/12 m-auto">
+                    <input type = "text" defaultValue={this.clip.title} className="bg-gray-700 w-5/12 rounded-md p-1 text-center"></input>
+                    <button onClick = {this.setTitleToLooper} className="bg-gray-800 m-2 p-1 rounded-lg w-1/12 hover:bg-gray-600">Set</button>
                 </div>
-                <div className="border-solid border-black border-2 p-2">
-                    <LinkBar setLinkToLooper ={this.setLinkToLooper} link = {this.clip.link} locker ={this.lockUnlockClip}/>
-                    <TitleBar setTitleToLooper ={this.setTitleToLooper} title = {this.clip.title}/>
-                    <LockButton isLocked ={this.clip.lock}/>
-                    <LoopNaviagator loops = {this.clip.loops} handler = {this.delLoopFromLooper}/>
-                    <MemoInput lock = {this.clip.lock} memo = {this.clip.loops[this.clip.curIdx].memo} handler = {this.changeMemo} locker = {this.lockUnlockClip}/>
+  
+                <div className = "text-center w-11/12 m-auto">
+                    <input type = "text" defaultValue={this.clip.link} className="bg-gray-700 w-5/12 rounded-md p-1 text-center"></input>
+                    <button onClick = {this.setLinkToLooper} className="bg-gray-800 m-2 p-1 rounded-lg w-1/12 hover:bg-gray-600">Import</button>
                 </div>
+  
+            </div>
+
+            <div className="h-[75vh] grid grid-cols-12 grid-rows-12 realtive border-gray-800 border rounded-md p-4">    
+                <YouTube 
+                    id = "youtube-player" 
+                    videoId={this.getYoutubeVideoId(this.clip.link)}
+                    onReady={this.onReadyPlayer}
+                    className="col-span-9 row-span-8"
+                    iframeClassName="w-full h-full"
+                />
+                <div id="loopers-display" className="col-span-3 row-span-8 w-full overflow-y-scroll overflow-x-hidden">
+                    
+                    {this.clip.loops.map((loop, idx) => {
+   
+                        return(
+                            <button onClick={() => this.jumpToLoop(idx)} key={idx} id={`looper-display-${idx}`} className={"bg-gray-900 w-10/12 p-2 border-gray-500 border m-2 flex justify-between rounded-md " + ((idx === this.clip.curIdx) ? "font-bold text-gray-800 bg-gray-200 border-gray-100 border-2" : "")}>
+                                <div className="">{secFormat(loop.point)}</div>
+                                <button className = "" onClick={(e) => {e.stopPropagation();this.delLoopFromLooper(idx)}}>
+                                    <DeleteBtn />
+                                </button>
+                            </button> 
+                        )
+                    })}        
+                </div>
+                <div className="col-start-12 flex justify-end mt-4">
+                    {/* <div className="flex items-center justify-center mr-2 mt-1">
+                        <button className="bg-gray-800 p-2 rounded-md  hover:bg-gray-600" onClick={this.addLoopToLooper}>Loop!</button>
+                    </div> */}
+                    
+                    <div className="flex items-center justify-center mr-1">
+                    {
+                        this.state.isPlaying? 
+                        <button onClick={this.stopLoop}>
+                            <PauseBtn/>
+                        </button> 
+                        :
+                        <button onClick={this.playLoop}>
+                            <PlayBtn/>
+                        </button>
+                    }
+                    </div>
+                    <div className="flex items-center justify-center">
+                        <button onClick={this.lockUnlockClip}>
+                            <LockDisplay isLocked ={this.clip.lock}/>
+                        </button>
+                    </div>
+                </div>
+            
+                
+                <button className="col-start-1 row-start-10 flex items-center justify-end mr-4" onClick={this.prevLoop}>
+                    <PrevBtn/>
+                </button>
+                <div className="col-start-2 col-span-8 row-start-9 row-span-3 mt-4"> 
+
+                    <textarea id='memo' value={this.clip.loops[this.clip.curIdx]?.memo} onChange={this.changeMemo} className="h-full w-full m-auto resize-none bg-gray-900 rounded-md p-3"/>
+                    
+                </div>
+                <button className="col-start-10 row-start-10 flex items-center justfify-start ml-4" onClick={this.nextLoop}>
+                    <NextBtn/>
+                </button>
+               
+            </div>
+                
                 {/* <div className = "hidden" id = "helper">
                     <ul>
                       <li>Nav mode is required to control video.</li>
@@ -273,7 +380,7 @@ class WrappedLooper extends React.Component {
                   const helper = document.getElementById('helper')
                   helper.className = "looper__helper--show"
                 }}>Help</button> */}
-            </div>
+        </div>
             
         );
     }
@@ -339,10 +446,17 @@ const LoopNaviagator = (props) => {
 /*
 LockButton Component : When it is locked, You cannot control the video with keyboards. only memo!
 */
-const LockButton = (props) => {
-  return (
-      <span>{props.isLocked ? "MEMO MODE" : "NAV MODE"}</span>
-  )
+const LockDisplay = (props) => {
+    if(props.isLocked){
+        return (
+            <Lock />
+        )
+    }
+    else{
+        return (
+            <Unlock />
+        )
+    }
 }
 
 /*
@@ -354,7 +468,7 @@ class MemoInput extends React.Component {
     }
     componentDidUpdate(){
       const memo = document.getElementById('memo')
-      memo.focus()
+    //   memo.focus()
     }
     render(){
       return (

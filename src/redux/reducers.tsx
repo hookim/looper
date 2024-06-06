@@ -39,21 +39,28 @@ const reducer = (state = [], action) => {
             });
         case 'ADD_LOOP':
             // if the point is already indexed then do nothing
-            if((target_clip.loops[target_clip.curIdx].point).toString() !== (action.point).toString()){
+            if((target_clip.loops[target_clip.curIdx].point) !== (action.point)){
                 target_clip.loops.splice(target_clip.curIdx + 1, 0, {...demoLoop, point : action.point})
+
                 target_clip.curIdx += 1
             }
             return newState;
         case 'DEL_LOOP':
-            if(action.idx){
+            if(action.idx > 0){
               target_clip.loops.splice(action.idx, 1);
-              if(action.idx <= target_clip.curIdx)
+              
+            if(action.idx <= target_clip.curIdx)
                 target_clip.curIdx -= 1;
             }
+        
+            console.log(target_clip)
             return newState;
         case 'NEXT_LOOP':
-            if(target_clip.curIdx + 1 !== target_clip.loops.length)
+            if(target_clip.curIdx + 1 < target_clip.loops.length)
                 target_clip.curIdx += 1
+            return newState
+        case 'JUMP_LOOP':    
+            target_clip.curIdx = action.newIdx
             return newState
         case 'PREV_LOOP':
             if(target_clip.curIdx - 1 >= 0)
