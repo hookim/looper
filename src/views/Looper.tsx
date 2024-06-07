@@ -115,7 +115,7 @@ class WrappedLooper extends React.Component {
       Save the state to the storage
       */
       saveToStore(){
-        localStorage.setItem('looper-state', JSON.stringify(this.props.state))
+        localStorage.setItem('looper-state-2', JSON.stringify(this.props.state))
       }
 
       /* 
@@ -177,9 +177,9 @@ class WrappedLooper extends React.Component {
     */
     setTitleToLooper(e){
       const newTitle = e.target.parentNode.children[0].value
-      console.log(this.clip.id, newTitle)
       this.props.dispatch(setTitle(this.clip.id, newTitle));
       this.saveToStore()
+      window.alert("제목이 정상적으로 수정됐습니다.")
     //   window.location.reload();
     }
 
