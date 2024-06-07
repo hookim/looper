@@ -1,12 +1,12 @@
 ### Website
-https://hookim.github.io/looper
+[try here!](https://hookim.github.io/looper)
 
 ### Requirement
 + Only Desktop version
 + Chrome,Firefox is highly recommended for this program
 
-### How it works?
-https://www.youtube.com/watch?v=mH7cIJWq0xs
+### How to use?
+[how to use](https://www.youtube.com/watch?v=M0BFiDyxR1U) 
 
-### Issue
-+ when looper is played by clicking video interface not by looper interface, loop point is not created
+### Developer Notes
+be there soon 
