@@ -3,13 +3,15 @@ import YouTube from "react-youtube";
 import {connect} from "react-redux";
 import {useParams} from "react-router-dom";
 import { addLoop, delLoop, setLink, setTitle, editMemo , nextLoop, prevLoop, lockLoop, unlockLoop, jumpLoop} from "../redux/action-generator";
-import Lock from '/assets/lock.svg?react'
-import Unlock from '/assets/unlock.svg?react'
-import DeleteBtn from "/assets/delete.svg?react"
+
 import NextBtn from "/assets/next.svg?react"
 import PrevBtn from "/assets/prev.svg?react"
 import PlayBtn from "/assets/play.svg?react"
 import PauseBtn from "/assets/pause.svg?react"
+import DeleteBtn from "/assets/delete.svg?react"
+import AddBtn from '/assets/add.svg?react'
+import QuestionBtn from "/assets/question.svg?react"
+
 
 
 
@@ -36,13 +38,14 @@ class WrappedLooper extends React.Component {
       this.delLoopFromLooper = this.delLoopFromLooper.bind(this)
       this.setLinkToLooper = this.setLinkToLooper.bind(this)
       this.setTitleToLooper = this.setTitleToLooper.bind(this)
-      this.setEventForKeyboard = this.setEventForKeyboard.bind(this)
+    //   this.setEventForKeyboard = this.setEventForKeyboard.bind(this)
       this.saveToStore = this.saveToStore.bind(this)
       this.changeMemo = this.changeMemo.bind(this)
       this.lockUnlockClip = this.lockUnlockClip.bind(this)
       this.nextLoop = this.nextLoop.bind(this)
       this.prevLoop = this.prevLoop.bind(this)
       this.jumpToLoop = this.jumpToLoop.bind(this)
+      this.onStateChange = this.onStateChange.bind(this)
     }
 
       /*
@@ -174,9 +177,10 @@ class WrappedLooper extends React.Component {
     */
     setTitleToLooper(e){
       const newTitle = e.target.parentNode.children[0].value
+      console.log(this.clip.id, newTitle)
       this.props.dispatch(setTitle(this.clip.id, newTitle));
-      window.alert("제목 수정에 성공했습니다.")
-      window.location.reload();
+      this.saveToStore()
+    //   window.location.reload();
     }
 
     /* 
@@ -186,39 +190,60 @@ class WrappedLooper extends React.Component {
     When Looper component is alive we use keyboard event listener of the window. 
     If the clip is locked keyboard input doesn't work
     */
-    setEventForKeyboard(){
-        window.addEventListener('keydown', (e) => {
-            if(!this.clip.lock){
-                if(e.key === 'ArrowDown'){
-                    if(this.state.isPlaying)
-                      this.addLoopToLooper((Math.floor(this.player.getCurrentTime())))
+    // setEventForKeyboard(){
+    //     window.addEventListener('keydown', (e) => {
+    //         if(!this.clip.lock){
+    //             if(e.key === 'ArrowDown'){
+    //                 if(this.state.isPlaying)
+    //                   this.addLoopToLooper((Math.floor(this.player.getCurrentTime())))
                     
-                    document.getElementById(`looper-display-${this.clip.curIdx}`)?.scrollIntoView()
-                    console.log(document.getElementById(`looper-display-${this.clip.curIdx}`))
-                }
-                else if (e.key === 'p' || e.key === 'P'){
-                    if(!this.state.isPlaying)
-                      this.playLoop()
-                    else
-                      this.stopLoop()
-                }
-                else if (e.key === '['){
-                    this.prevLoop();
+    //                 document.getElementById(`looper-display-${this.clip.curIdx}`)?.scrollIntoView()
+    //                 console.log(document.getElementById(`looper-display-${this.clip.curIdx}`))
+    //             }
+    //             else if (e.key === 'p' || e.key === 'P'){
+    //                 if(!this.state.isPlaying)
+    //                   this.playLoop()
+    //                 else
+    //                   this.stopLoop()
+    //             }
+    //             else if (e.key === '['){
+    //                 this.prevLoop();
                     
 
-                }
-                else if (e.key === ']'){
-                    this.nextLoop()
-                }
-                else if (e.key === 's' || e.key === 'S'){
-                  this.saveToStore()
-                }
+    //             }
+    //             else if (e.key === ']'){
+    //                 this.nextLoop()
+    //             }
+    //             else if (e.key === 's' || e.key === 'S'){
+    //               this.saveToStore()
+    //             }
+    //         }
+    //         // unlock it
+    //         if(e.key === 'Escape'){
+    //           this.lockUnlockClip()
+    //         }
+    //     }, true) 
+    // }
+
+    onStateChange(e){
+        if(e.data === 3){
+            const curTime = Math.floor(e.target.getCurrentTime());
+            const idx = this.clip.loops.findIndex(el=> {
+                return el.point > curTime
+            })
+            console.log(idx)
+            if(idx-1 === this.clip.curIdx){
+                return;
             }
-            // unlock it
-            if(e.key === 'Escape'){
-              this.lockUnlockClip()
+    
+            if(idx === -1){
+                this.jumpToLoop(this.clip.loops.length - 1)
             }
-        }, true) 
+            else{
+                this.jumpToLoop(idx - 1)
+            }
+        }
+
     }
 
     /*
@@ -227,7 +252,7 @@ class WrappedLooper extends React.Component {
     async onReadyPlayer(e){
         this.player = e.target
         this.endTime = this.player.getDuration();
-        this.setEventForKeyboard(); 
+        // this.setEventForKeyboard(); 
         this.initAutoSave();
     }
 
@@ -246,11 +271,7 @@ class WrappedLooper extends React.Component {
     } 
 
     changeMemo(e){ 
-      if(this.clip.lock){   
         this.props.dispatch(editMemo(this.clip.id, this.clip.curIdx, e.target.value))
-      }
-     
-      
     }
     lockUnlockClip(){
       if(!this.clip.lock)
@@ -283,18 +304,17 @@ class WrappedLooper extends React.Component {
         if(target)
           target.classList.add('current-loop')
 
-
         return (
         <div className="w-full h-full">
             <div className="mb-2 relative">
                 <div className = "text-center w-11/12 m-auto">
-                    <input type = "text" defaultValue={this.clip.title} className="bg-gray-700 w-5/12 rounded-md p-1 text-center"></input>
-                    <button onClick = {this.setTitleToLooper} className="bg-gray-800 m-2 p-1 rounded-lg w-1/12 hover:bg-gray-600">Set</button>
+                    <input type = "text" defaultValue={this.clip.title} onChange={(e) => {console.log(e.target.value)}} className="bg-gray-700 w-5/12 rounded-md p-1 text-center"></input>
+                    <button onClick = {this.setTitleToLooper} className="bg-gray-800 m-2 p-1 rounded-lg w-2/12 hover:bg-gray-600">set</button>
                 </div>
   
                 <div className = "text-center w-11/12 m-auto">
                     <input type = "text" defaultValue={this.clip.link} className="bg-gray-700 w-5/12 rounded-md p-1 text-center"></input>
-                    <button onClick = {this.setLinkToLooper} className="bg-gray-800 m-2 p-1 rounded-lg w-1/12 hover:bg-gray-600">Import</button>
+                    <button onClick = {this.setLinkToLooper} className="bg-gray-800 m-2 p-1 rounded-lg w-2/12 hover:bg-gray-600">import</button>
                 </div>
   
             </div>
@@ -304,6 +324,7 @@ class WrappedLooper extends React.Component {
                     id = "youtube-player" 
                     videoId={this.getYoutubeVideoId(this.clip.link)}
                     onReady={this.onReadyPlayer}
+                    onStateChange={this.onStateChange}
                     className="col-span-9 row-span-8"
                     iframeClassName="w-full h-full"
                 />
@@ -312,7 +333,7 @@ class WrappedLooper extends React.Component {
                     {this.clip.loops.map((loop, idx) => {
    
                         return(
-                            <button onClick={() => this.jumpToLoop(idx)} key={idx} id={`looper-display-${idx}`} className={"bg-gray-900 w-10/12 p-2 border-gray-500 border m-2 flex justify-between rounded-md " + ((idx === this.clip.curIdx) ? "font-bold text-gray-800 bg-gray-200 border-gray-100 border-2" : "")}>
+                            <button onClick={() => this.jumpToLoop(idx)} key={idx} id={`looper-display-${idx}`} className={(idx === this.clip.curIdx) ?  "bg-gray-300 w-11/12 p-2 border-gray-500 border-2 m-2 flex text-black justify-between rounded-md" : "bg-gray-900 w-11/12 p-2 border-gray-500 border m-2 flex justify-between rounded-md "}>
                                 <div className="">{secFormat(loop.point)}</div>
                                 <button className = "" onClick={(e) => {e.stopPropagation();this.delLoopFromLooper(idx)}}>
                                     <DeleteBtn />
@@ -338,9 +359,10 @@ class WrappedLooper extends React.Component {
                         </button>
                     }
                     </div>
+
                     <div className="flex items-center justify-center">
-                        <button onClick={this.lockUnlockClip}>
-                            <LockDisplay isLocked ={this.clip.lock}/>
+                        <button onClick={() => this.addLoopToLooper((Math.floor(this.player.getCurrentTime())))}>
+                            <AddBtn />
                         </button>
                     </div>
                 </div>

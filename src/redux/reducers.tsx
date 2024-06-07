@@ -12,10 +12,9 @@ const demoLoop = {
 }
 const demoClips = {
     title : "untitled",
-    link : null,
+    link : "https://www.youtube.com/watch?v=gO8N3L_aERg",
     id : null,
     curIdx : 0,
-    lock : false, 
     loops : [{...demoLoop, point: 0}]
 }
 
@@ -75,12 +74,12 @@ const reducer = (state = [], action) => {
         case 'SET_TITLE':
             target_clip.title = action.title
             return newState
-        case 'LOCK_LOOP':
-            target_clip.lock = true
-            return newState
-        case 'UNLOCK_LOOP':
-            target_clip.lock = false
-            return newState
+        // case 'LOCK_LOOP':
+        //     target_clip.lock = true
+        //     return newState
+        // case 'UNLOCK_LOOP':
+        //     target_clip.lock = false
+        //     return newState
         default:
             return [...state]
     }
