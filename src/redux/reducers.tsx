@@ -22,20 +22,25 @@ const demoClips = {
 Reducer : It attaches to the redux store and set the rule to modify the data. 
 */
 const reducer = (state = [], action) => {
-    let newState , target_idx, target_clip
+    let newState , target_idx, target_clip, retState = null
     if(action.id !== undefined){
         newState = [...state]
         // we will use pointer to the object in state object
         target_idx = newState.findIndex((clip) => (clip.id === action.id));
         target_clip = newState[target_idx];
     }
+    
     switch(action.type){
         case 'ADD_CLIP':
-            return newState.concat({...demoClips, id : action.id});
+            retState = newState.concat({...demoClips, id : action.id});
+            localStorage.setItem('looper-state-2', JSON.stringify(retState));
+            return retState;
         case 'DEL_CLIP':
-            return newState.filter(item => {
+            retState = newState.filter(item => {
                 return item.id !== action.id
             });
+            localStorage.setItem('looper-state-2', JSON.stringify(retState));
+            return retState;
         case 'ADD_LOOP':
             // if the point is already indexed then do nothing
             if((target_clip.loops[target_clip.curIdx].point) !== (action.point)){
